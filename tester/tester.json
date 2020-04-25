@@ -1,0 +1,91 @@
+{
+  "name": "Untitled app",
+  "type": "flogo:app",
+  "version": "0.0.1",
+  "appModel": "1.1.0",
+  "description": "",
+  "imports": [
+    "github.com/project-flogo/contrib/activity/log",
+    "github.com/project-flogo/contrib/trigger/timer",
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/messaging-contrib/kafka/activity"
+  ],
+  "triggers": [
+    {
+      "id": "timer",
+      "ref": "#timer",
+      "name": "Timer",
+      "description": "Simple Timer trigger",
+      "handlers": [
+        {
+          "settings": {
+            "startDelay": "0",
+            "repeatInterval": "1m"
+          },
+          "action": {
+            "ref": "#flow",
+            "settings": {
+              "flowURI": "res://flow:test"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:test",
+      "data": {
+        "name": "test",
+        "description": "test1",
+        "tasks": [
+          {
+            "id": "log_2",
+            "name": "Log",
+            "description": "Logs a message",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "message": "test",
+                "addDetails": false,
+                "usePrint": false
+              }
+            }
+          },
+          {
+            "id": "activity_3",
+            "name": "Publish Kafka message",
+            "description": "Publish a message to a kafka topic",
+            "activity": {
+              "ref": "#activity",
+              "input": {
+                "message": {
+                  "mapping": {
+                    "name": "hello world",
+                    "sentAt": "2020-04-24T00:00:00"
+
+                  }
+                }
+              },
+              "settings": {
+                "connection": {
+                  "ref":"github.com/project-flogo/messaging-contrib/kafka/connection",
+                  "settings":{
+                    "brokerUrls":"localhost:9092"
+                  }                
+                },
+                "topic": "hello"
+              }
+            }
+          }
+        ],
+        "links": [
+          {
+            "from": "log_2",
+            "to": "activity_3"
+          }
+        ]
+      }
+    }
+  ]
+}
